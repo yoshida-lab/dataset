@@ -177,6 +177,9 @@ def _mp_structure(*args, **kwargs):
 
 # %%
 if __name__ == '__main__':
+     from sha256 import refresh
+    name = 'mp_structure.pkl.pd_'
     db_path = Path(__file__).parent
     _mp = _mp_structure()
-    _mp.to_pickle(str(db_path / 'mp_structure.pkl'))
+    _mp.to_pickle(str(db_path / name))
+    refresh(name)

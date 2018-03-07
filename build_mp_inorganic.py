@@ -25,12 +25,16 @@ def _mp_inorganic(*args, **kwargs):
 
     # the following props will be fetched
     mp_props = [
-        'anonymous_formula',
+        # 'anonymous_formula',
         'band_gap',
         'density',
         'volume',
+        'material_id',
         # 'discovery_year',
         # 'elastic_tensor',
+        'nsites',
+        'spacegroup',
+        'pretty_formula',
         'elements',
         'efermi',
         'e_above_hull',
@@ -41,9 +45,6 @@ def _mp_inorganic(*args, **kwargs):
         'total_magnetization',
         'unit_cell_formula',
     ]
-
-    props = args if args else mp_props
-    props.append('pretty_formula')
 
     # fetch data
     with MPRester(api_key) as mpr:
@@ -178,20 +179,33 @@ def _mp_inorganic(*args, **kwargs):
     with MPRester(api_key) as mpr:
         for group in tqdm(mpid_groups):
             mpid_list = [id for id in filter(None, group)]
-            chunk = mpr.query({"material_id": {"$in": mpid_list}}, props)
+            chunk = mpr.query({"material_id": {"$in": mpid_list}}, mp_props)
             entries.extend(chunk)
 
-    df = pd.DataFrame(entries, index=[f['pretty_formula'] for f in entries])
-    df = df.drop('pretty_formula', axis=1)
+    def split_spacegroup_dict(e):
+        sg = e['spacegroup']
+        del e['spacegroup']
+        e['space_group_number'] = sg['number']
+        e['space_group'] = sg['symbol']
+        e['point_group'] = sg['point_group']
+        e['n_elemets'] = len(e['elements'])
+        return e
+
+    entries = [split_spacegroup_dict(e) for e in entries]
+
+    df = pd.DataFrame(entries, index=[e['material_id'] for e in entries])
+    df = df.drop('material_id', axis=1)
     df = df.rename(columns={'unit_cell_formula': 'composition'})
     df = df.reindex(columns=sorted(df.columns))
 
     return df
 
 
-# %%
 if __name__ == '__main__':
+    from sha256 import refresh
+    name = 'mp_inorganic.pkl.pd_'
     db_path = Path(__file__).parent
     _mp = _mp_inorganic()
-    _mp.to_pickle(str(db_path / 'mp_inorganic.pkl'))
+    _mp.to_pickle(str(db_path / name))
     # _mp.to_csv(str(db_path / 'inorganic_proporty.csv'))
+    refresh(name)
