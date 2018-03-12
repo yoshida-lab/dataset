@@ -10,7 +10,7 @@ from pymatgen import MPRester
 from tqdm import tqdm
 
 
-def _mp_inorganic(*args, **kwargs):
+def _mp_inorganic(**kwargs):
     # material projects API-key
     api_key = 'Zrp32nS1LVBHsGCK'
     if 'api_key' in kwargs:
@@ -171,7 +171,7 @@ def _mp_inorganic(*args, **kwargs):
         # entries = mpr.query({"elements": "O", "nelements": {"$gte": 1}}, props)
         entries = mpr.query({"elements": {'$in': elements}}, ['material_id'])
         mp_ids = [e['material_id'] for e in entries]
-        print('All norganic in MaterialProjects: {}'.format(len(mp_ids)))
+        print('All inorganic in MaterialProjects: {}'.format(len(mp_ids)))
 
     entries = []
     mpid_groups = [g for g in grouper(mp_ids, 1000)]
