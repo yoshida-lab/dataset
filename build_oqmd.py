@@ -3,22 +3,13 @@
 # license that can be found in the LICENSE file.
 
 # first install qmpy
+from __future__ import unicode_literals
 from qmpy import *
 import pandas as pd
 from pymatgen.core import Structure
 from django.core.exceptions import MultipleObjectsReturned
 import sys
 import os
-from __future__ import unicode_literals
-
-# ELEMENT_SET=['F', 'Cl', 'Br', 'I', 'O', 'S', 'Se', 'Te', 'N', 'P', 'As', 'C', 'H']
-# query = Structure.objects.filter(calculated__converged=True, calculated__label__in=['static', 'standard'], element_set__in=ELEMENT_SET).exclude(calculated__formationenergy=None)
-query = Structure.objects.filter(
-    calculated__converged=True, calculated__label__in=[
-        'static', 'standard'
-    ]).exclude(calculated__formationenergy=None)
-count = query.count()
-structures = [s for s in query.all()]
 
 
 def extract(s):
@@ -55,8 +46,15 @@ def extract(s):
 
 
 def _main():
+    # ELEMENT_SET=['F', 'Cl', 'Br', 'I', 'O', 'S', 'Se', 'Te', 'N', 'P', 'As', 'C', 'H']
+    # query = Structure.objects.filter(calculated__converged=True, calculated__label__in=['static', 'standard'], element_set__in=ELEMENT_SET).exclude(calculated__formationenergy=None)
+    query = Structure.objects.filter(
+        calculated__converged=True,
+        calculated__label__in=['static', 'standard'
+                               ]).exclude(calculated__formationenergy=None)
+    count = query.count()
     tmp = []
-    for i, s in enumerate(structures):
+    for i, s in enumerate(query.all()):
         try:
             tmp.append(extract(s))
         except Exception as e:
@@ -65,15 +63,21 @@ def _main():
         if i % 10000 == 0:
             print('%s done!' % i)
 
-    return pd.DataFrame(data=tmp)
+    data = pd.DataFrame(data=tmp).set_index('oqmd_s_id')
+    props = data.drop(['structure'], axis=1)
+    structures = pd.DataFrame(data['structure'])
+
+    return props, structures
 
 
 if __name__ == '__main__':
     from sha256 import refresh
     from pathlib import Path
-    name = 'oqmd_v1.2_%s.pkl.z' % count
+    name_p = 'oqmd_inorganic.pkl.pd_'
+    name_s = 'oqmd_structure.pkl.pd_'
     db_path = Path(__file__).parent
-    # _oqmd = _main()
-    # _oqmd.to_pickle(str(db_path / name))
+    props, structures = _main()
+    props.to_pickle(str(db_path / name_p))
+    structures.to_pickle(str(db_path / name_s))
     # _mp.iloc[:10, :].to_excel(str(db_path / 'output.xlsx'))
-    refresh(name)
+    refresh(name_p, name_s)
