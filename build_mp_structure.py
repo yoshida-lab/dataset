@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 def _mp_structure(**kwargs):
     # material projects API-key
-    api_key = 'Zrp32nS1LVBHsGCK'
+    api_key = ''
     if 'api_key' in kwargs:
         api_key = kwargs['api_key']
 
@@ -173,7 +173,7 @@ def _mp_structure(**kwargs):
 
 if __name__ == '__main__':
     from sha256 import refresh
-    name = 'mp_structure.pkl.pd_'
+    name = 'mp_structure.pd.xz'
     db_path = Path(__file__).parent
     _mp = _mp_structure()
     _mp.to_pickle(str(db_path / name))

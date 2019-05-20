@@ -50,8 +50,7 @@ def _main():
     # query = Structure.objects.filter(calculated__converged=True, calculated__label__in=['static', 'standard'], element_set__in=ELEMENT_SET).exclude(calculated__formationenergy=None)
     query = Structure.objects.filter(
         calculated__converged=True,
-        calculated__label__in=['static', 'standard'
-                               ]).exclude(calculated__formationenergy=None)
+        calculated__label__in=['static', 'standard']).exclude(calculated__formationenergy=None)
     count = query.count()
     tmp = []
     for i, s in enumerate(query.all()):
@@ -73,8 +72,8 @@ def _main():
 if __name__ == '__main__':
     from sha256 import refresh
     from pathlib import Path
-    name_p = 'oqmd_inorganic.pkl.pd_'
-    name_s = 'oqmd_structure.pkl.pd_'
+    name_p = 'oqmd_inorganic.pd.xz'
+    name_s = 'oqmd_structure.pd.xz'
     db_path = Path(__file__).parent
     props, structures = _main()
     props.to_pickle(str(db_path / name_p))

@@ -29,7 +29,7 @@ def _elements(*drop_list):
 
 if __name__ == '__main__':
     from sha256 import refresh
-    name = 'elements.pkl.pd_'
+    name = 'elements.pd.xz'
     db_path = Path(__file__).parent
     data = pd.read_csv(str(db_path / 'elements.csv'))
     data = data.rename(lambda i: data.loc[i, 'symbol']).drop('symbol', axis=1)

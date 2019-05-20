@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 def _mp_inorganic(**kwargs):
     # material projects API-key
-    api_key = 'Zrp32nS1LVBHsGCK'
+    api_key = ''
     if 'api_key' in kwargs:
         api_key = kwargs['api_key']
 
@@ -203,7 +203,7 @@ def _mp_inorganic(**kwargs):
 
 if __name__ == '__main__':
     from sha256 import refresh
-    name = 'mp_inorganic.pkl.pd_'
+    name = 'mp_inorganic.pd.xz'
     db_path = Path(__file__).parent
     _mp = _mp_inorganic()
     _mp.to_pickle(str(db_path / name))
