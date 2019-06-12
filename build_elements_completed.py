@@ -1,11 +1,10 @@
-# Copyright 2017 TsumiNa. All rights reserved.
+# Copyright 2019 TsumiNa. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
 from pathlib import Path
 
 import pandas as pd
-
 
 if __name__ == '__main__':
     db_path = Path(__file__).parent

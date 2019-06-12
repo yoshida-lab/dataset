@@ -1,7 +1,8 @@
-# Copyright 2017 TsumiNa. All rights reserved.
+# Copyright 2019 TsumiNa. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
+import json
 from itertools import zip_longest
 from pathlib import Path
 
@@ -10,12 +11,7 @@ from pymatgen import MPRester
 from tqdm import tqdm
 
 
-def _mp_structure(**kwargs):
-    # material projects API-key
-    api_key = ''
-    if 'api_key' in kwargs:
-        api_key = kwargs['api_key']
-
+def _mp_structure(mp_ids, *, api_key=''):
     # split requests into fixed number groups
     # eg: grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
     def grouper(iterable, n, fillvalue=None):
@@ -25,133 +21,6 @@ def _mp_structure(**kwargs):
 
     # the following props will be fetched
     mp_props = ['structure', 'material_id']
-
-    # fetch data
-    with MPRester(api_key) as mpr:
-        elements = [
-            'H',
-            'He',
-            'Li',
-            'Be',
-            'B',
-            'C',
-            'N',
-            'O',
-            'F',
-            'Ne',
-            'Na',
-            'Mg',
-            'Al',
-            'Si',
-            'P',
-            'S',
-            'Cl',
-            'Ar',
-            'K',
-            'Ca',
-            'Sc',
-            'Ti',
-            'V',
-            'Cr',
-            'Mn',
-            'Fe',
-            'Co',
-            'Ni',
-            'Cu',
-            'Zn',
-            'Ga',
-            'Ge',
-            'As',
-            'Se',
-            'Br',
-            'Kr',
-            'Rb',
-            'Sr',
-            'Y',
-            'Zr',
-            'Nb',
-            'Mo',
-            'Tc',
-            'Ru',
-            'Rh',
-            'Pd',
-            'Ag',
-            'Cd',
-            'In',
-            'Sn',
-            'Sb',
-            'Te',
-            'I',
-            'Xe',
-            'Cs',
-            'Ba',
-            'La',
-            'Ce',
-            'Pr',
-            'Nd',
-            'Pm',
-            'Sm',
-            'Eu',
-            'Gd',
-            'Tb',
-            'Dy',
-            'Ho',
-            'Er',
-            'Tm',
-            'Yb',
-            'Lu',
-            'Hf',
-            'Ta',
-            'W',
-            'Re',
-            'Os',
-            'Ir',
-            'Pt',
-            'Au',
-            'Hg',
-            'Tl',
-            'Pb',
-            'Bi',
-            'Po',
-            'At',
-            'Rn',
-            'Fr',
-            'Ra',
-            'Ac',
-            'Th',
-            'Pa',
-            'U',
-            'Np',
-            'Pu',
-            'Am',
-            'Cm',
-            'Bk',
-            'Cf',
-            'Es',
-            'Fm',
-            'Md',
-            'No',
-            'Lr',
-            'Rf',
-            'Db',
-            'Sg',
-            'Bh',
-            'Hs',
-            'Mt',
-            'Ds',
-            'Rg',
-            'Cn',
-            'Nh',
-            'Fl',
-            'Mc',
-            'Lv',
-            'Ts',
-            'Og',
-        ]
-        # entries = mpr.query({"elements": "O", "nelements": {"$gte": 1}}, props)
-        entries = mpr.query({"elements": {'$in': elements}}, ['material_id'])
-        mp_ids = [e['material_id'] for e in entries]
-        print('All inorganic in MaterialProjects: {}'.format(len(mp_ids)))
 
     entries = []
     mpid_groups = [g for g in grouper(mp_ids, 1000)]
@@ -175,7 +44,9 @@ if __name__ == '__main__':
     from sha256 import refresh
     name = 'mp_structure.pd.xz'
     db_path = Path(__file__).parent
-    _mp = _mp_structure()
+    with open('ids.json', 'r') as f:
+        mp_ids = json.load(f)
+    _mp = _mp_structure(mp_ids, api_key='')
     _mp.to_pickle(str(db_path / name))
     # _mp.iloc[:10, :].to_excel(str(db_path / 'output.xlsx'))
     refresh(name)
