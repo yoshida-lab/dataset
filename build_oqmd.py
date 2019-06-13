@@ -4,63 +4,61 @@
 
 # first install qmpy
 from __future__ import unicode_literals
-from qmpy import *
+
+import joblib
 import pandas as pd
+
+from tqdm import tqdm
+from qmpy import *
 from pymatgen.core import Structure
-from django.core.exceptions import MultipleObjectsReturned
-import sys
-import os
 
 
-def extract(s):
-    pmg_s = Structure(s.cell, s.site_compositions, s.site_coords)
-    cal = s.calculated.first()
-    fe = cal.formationenergy_set.first()
-
+def extract(entry):
+    struct = entry.structure
+    spacegroup = entry.spacegroup
+    pmg_s = Structure(struct.cell, struct.site_compositions, struct.site_coords)
+    
     return dict(
-        oqmd_s_id=s.id,
-        label=s.label,
-        formula=s.name,
-        natoms=s.natoms,
-        ntypes=s.ntypes,
-        nsites=s.nsites,
-        stresses=s.stresses,
-        forces=s.forces,
-        volume=s.volume,
-        volume_pa=s.volume_pa,
-        composition=s.comp,
-        magmon=cal.magmom,
-        magmon_pa=cal.magmom_pa,
-        band_gap=cal.band_gap,
-        energy=cal.energy,
-        energy_pa=cal.energy_pa,
-        formation_energy=fe.delta_e,
-        stability=fe.stability,
-        spacegroup_hm=s.spacegroup.hm,
-        spacegroup_hall=s.spacegroup.hall,
-        spacegroup_id=s.spacegroup_id,
-        spacegroup_schoenflies=s.spacegroup.schoenflies,
-        is_centro_symmetric=s.spacegroup.centrosymmetric,
-        structure=pmg_s,
+        id=entry.id,
+        label=entry.label,
+        proto_label=entry.proto_label,
+        formula=entry.name,
+        composition=entry.spec_comp,
+        reduced_comp=entry.name,
+        total_energy_pa=entry.total_energy,
+        formation_energy_pa=entry.energy,
+        experiment=entry.composition.experiment,
+        mass_pa=entry.mass,
+        stable=entry.stable,
+        band_gap=entry.band_gap,
+        spacegroup_hm=spacegroup.hm,
+        spacegroup_hall=spacegroup.hall,
+        spacegroup_id=spacegroup.number,
+        spacegroup_schoenflies=spacegroup.schoenflies,
+        is_centro_symmetric=spacegroup.centrosymmetric,
+        natoms=struct.natoms,
+        ntypes=struct.ntypes,
+        nsites=struct.nsites,
+#         stresses=struct.stresses,
+#         forces=struct.forces,
+        volume=struct.volume,
+        volume_pa=struct.volume_pa,
+        magmon=struct.magmom,
+        magmon_pa=struct.magmom_pa,
+        structure=pmg_s.as_dict(),
     )
 
 
 def _main():
     # ELEMENT_SET=['F', 'Cl', 'Br', 'I', 'O', 'S', 'Se', 'Te', 'N', 'P', 'As', 'C', 'H']
-    # query = Structure.objects.filter(calculated__converged=True, calculated__label__in=['static', 'standard'], element_set__in=ELEMENT_SET).exclude(calculated__formationenergy=None)
-    query = Structure.objects.filter(
-        calculated__converged=True,
-        calculated__label__in=['static', 'standard']).exclude(calculated__formationenergy=None)
-    count = query.count()
     tmp = []
-    for i, s in enumerate(query.all()):
-        try:
-            tmp.append(extract(s))
-        except Exception as e:
-            print('%s | %s | error:%s' % (s.name, s.id, e))
-
-        if i % 10000 == 0:
-            print('%s done!' % i)
+    with tqdm(total=Entry.objects.count()) as pbar:
+        for entry in Entry.objects.iterator():
+            try:
+                tmp.append(extract(entry))
+            except Exception as e:
+                print('%s | %s | error:%s' % (entry.name, entry.id, entry))
+            pbar.update(1)
 
     data = pd.DataFrame(data=tmp).set_index('oqmd_s_id')
     props = data.drop(['structure'], axis=1)
