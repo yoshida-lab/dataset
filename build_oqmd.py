@@ -5,64 +5,68 @@
 # first install qmpy
 from __future__ import unicode_literals
 
+from collections import OrderedDict
+
 import joblib
 import pandas as pd
-
-from tqdm import tqdm
-from qmpy import *
 from pymatgen.core import Structure
+from tqdm import tqdm
+
+from qmpy import *
 
 
 def extract(entry):
     struct = entry.structure
     spacegroup = entry.spacegroup
     pmg_s = Structure(struct.cell, struct.site_compositions, struct.site_coords)
-    
-    return dict(
-        id=entry.id,
-        label=entry.label,
-        proto_label=entry.proto_label,
-        formula=entry.name,
-        composition=entry.spec_comp,
-        reduced_comp=entry.name,
-        total_energy_pa=entry.total_energy,
-        formation_energy_pa=entry.energy,
-        experiment=entry.composition.experiment,
-        mass_pa=entry.mass,
-        stable=entry.stable,
-        band_gap=entry.band_gap,
-        spacegroup_hm=spacegroup.hm,
-        spacegroup_hall=spacegroup.hall,
-        spacegroup_id=spacegroup.number,
-        spacegroup_schoenflies=spacegroup.schoenflies,
-        is_centro_symmetric=spacegroup.centrosymmetric,
-        natoms=struct.natoms,
-        ntypes=struct.ntypes,
-        nsites=struct.nsites,
-#         stresses=struct.stresses,
-#         forces=struct.forces,
-        volume=struct.volume,
-        volume_pa=struct.volume_pa,
-        magmon=struct.magmom,
-        magmon_pa=struct.magmom_pa,
-        structure=pmg_s.as_dict(),
-    )
+
+    return OrderedDict([
+        ('id', entry.id),
+        ('label', entry.label),
+        ('proto_label', entry.proto_label),
+        ('formula', entry.name),
+        ('composition', entry.spec_comp),
+        ('reduced_comp', entry.red_comp),
+        ('unit_comp', entry.unit_comp),
+        ('total_energy_pa', entry.total_energy),
+        ('formation_energy_pa', entry.energy),
+        ('experiment', entry.composition.experiment),
+        ('mass', entry.mass),
+        ('stable', entry.stable),
+        ('band_gap', entry.band_gap),
+        ('spacegroup_hm', spacegroup.hm),
+        ('spacegroup_hall', spacegroup.hall),
+        ('spacegroup_id', spacegroup.number),
+        ('spacegroup_schoenflies', spacegroup.schoenflies),
+        ('is_centro_symmetric', spacegroup.centrosymmetric),
+        ('natoms', struct.natoms),
+        ('ntypes', struct.ntypes),
+        ('nsites', struct.nsites),
+        #       ('stresses', struct.stresses),
+        #       ('forces', struct.forces),
+        ('volume', struct.volume),
+        ('volume_pa', struct.volume_pa),
+        ('magmon', struct.magmom),
+        ('magmon_pa', struct.magmom_pa),
+    ]), OrderedDict([('id', entry.id), ('structure', pmg_s.as_dict())])
 
 
 def _main():
-    # ELEMENT_SET=['F', 'Cl', 'Br', 'I', 'O', 'S', 'Se', 'Te', 'N', 'P', 'As', 'C', 'H']
-    tmp = []
+    info = []
+    stru = []
+
     with tqdm(total=Entry.objects.count()) as pbar:
         for entry in Entry.objects.iterator():
             try:
-                tmp.append(extract(entry))
+                i, s = extract(entry)
+                info.append(i)
+                stru.append(s)
             except Exception as e:
                 print('%s | %s | error:%s' % (entry.name, entry.id, entry))
             pbar.update(1)
 
-    data = pd.DataFrame(data=tmp).set_index('oqmd_s_id')
-    props = data.drop(['structure'], axis=1)
-    structures = pd.DataFrame(data['structure'])
+    props = pd.DataFrame(data=info).set_index('id')
+    structures = pd.DataFrame(data=info).set_index('id')
 
     return props, structures
 
