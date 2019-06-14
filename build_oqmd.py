@@ -5,14 +5,14 @@
 # first install qmpy
 from __future__ import unicode_literals
 
+from qmpy import *
+
 from collections import OrderedDict
 
 import joblib
 import pandas as pd
-from pymatgen.core import Structure
+from pymatgen import Structure
 from tqdm import tqdm
-
-from qmpy import *
 
 
 def extract(entry):
@@ -33,6 +33,7 @@ def extract(entry):
         ('experiment', entry.composition.experiment),
         ('mass', entry.mass),
         ('stable', entry.stable),
+        ('is_ordered', pmg_s.is_ordered),
         ('band_gap', entry.band_gap),
         ('spacegroup_hm', spacegroup.hm),
         ('spacegroup_hall', spacegroup.hall),
@@ -62,7 +63,7 @@ def _main():
                 info.append(i)
                 stru.append(s)
             except Exception as e:
-                print('%s | %s | error:%s' % (entry.name, entry.id, entry))
+                print('%s | %s | error:%s' % (entry.name, entry.id, e))
             pbar.update(1)
 
     props = pd.DataFrame(data=info).set_index('id')
