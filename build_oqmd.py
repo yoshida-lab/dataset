@@ -33,9 +33,10 @@ def extract(entry):
         ('experiment', entry.composition.experiment),
         ('mass', entry.mass),
         ('stable', entry.stable),
+        ('e_above_hull', entry.formationenergy_set.first().stability),
         ('is_ordered', pmg_s.is_ordered),
         ('band_gap', entry.band_gap),
-        ('spacegroup_hm', spacegroup.hm),
+        ('spacegroup', spacegroup.hm),
         ('spacegroup_hall', spacegroup.hall),
         ('spacegroup_id', spacegroup.number),
         ('spacegroup_schoenflies', spacegroup.schoenflies),
@@ -43,12 +44,12 @@ def extract(entry):
         ('natoms', struct.natoms),
         ('ntypes', struct.ntypes),
         ('nsites', struct.nsites),
-        #       ('stresses', struct.stresses),
-        #       ('forces', struct.forces),
+        # ('stresses', struct.stresses),
+        # ('forces', struct.forces),
         ('volume', struct.volume),
         ('volume_pa', struct.volume_pa),
-        ('magmon', struct.magmom),
-        ('magmon_pa', struct.magmom_pa),
+        # ('magmon', struct.magmom),
+        # ('magmon_pa', struct.magmom_pa),
     ]), OrderedDict([('id', entry.id), ('structure', pmg_s.as_dict())])
 
 
@@ -59,6 +60,10 @@ def _main():
     with tqdm(total=Entry.objects.count()) as pbar:
         for entry in Entry.objects.iterator():
             try:
+                if entry.stable is None:
+                    print(entry)
+                    pbar.update(1)
+                    continue
                 i, s = extract(entry)
                 info.append(i)
                 stru.append(s)
