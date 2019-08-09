@@ -9,6 +9,7 @@ import json
 import pandas as pd
 from pymatgen import MPRester
 from tqdm import tqdm
+import numpy as np
 
 
 def _mp_inorganic(mp_ids, *, api_key=''):
@@ -28,13 +29,14 @@ def _mp_inorganic(mp_ids, *, api_key=''):
         'material_id',
         # 'discovery_year',
         # 'elastic_tensor',
-        'nsites',
-        'is_hubbard',
+        # 'elasticity',
         'is_ordered',
         'spacegroup',
         'pretty_formula',
         'elements',
         'efermi',
+        # 'diel',
+        # 'has',
         'e_above_hull',
         'formation_energy_per_atom',
         'final_energy_per_atom',
@@ -53,16 +55,32 @@ def _mp_inorganic(mp_ids, *, api_key=''):
             chunk = mpr.query({"material_id": {"$in": mpid_list}}, mp_props)
             entries.extend(chunk)
 
-    def split_spacegroup_dict(e):
+    def split_dict(e):
         sg = e['spacegroup']
         del e['spacegroup']
         e['space_group_number'] = sg['number']
         e['space_group'] = sg['symbol']
         e['point_group'] = sg['point_group']
         e['n_elemets'] = len(e['elements'])
+
+        # if 'elasticity' in e['has']:
+        #     sg = e['elasticity']
+        #     del e['elasticity']
+        #     e['G_VRH'] = sg['G_VRH'] if 'G_VRH' in sg else np.nan
+        #     e['K_VRH'] = sg['K_VRH'] if 'K_VRH' in sg else np.nan
+        #     e['poisson_ratio'] = sg['G_VRH'] if 'G_VRH' in sg else np.nan
+
+        # if 'diel' in e['has']:
+        #     sg = e['diel']
+        #     del e['diel']
+        #     e['refractive_index'] = sg['n'] if 'n' in sg else np.nan
+        #     e['electric_dielectric_cons'] = sg[
+        #         'poly_electronic'] if 'poly_electronic' in sg else np.nan
+        #     e['total_dielectric_cons'] = sg['poly_total'] if 'poly_electronic' in sg else np.nan
+
         return e
 
-    entries = [split_spacegroup_dict(e) for e in entries]
+    entries = [split_dict(e) for e in entries]
 
     df = pd.DataFrame(entries, index=[e['material_id'] for e in entries])
     df = df.drop('material_id', axis=1)

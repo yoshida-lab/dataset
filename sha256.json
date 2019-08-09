@@ -2,6 +2,7 @@
     "atom_init.pd.xz": "ac362e8bbce4b66987913b39e64b5554cf372e8f55dfc0cd76d6b2354059f84e",
     "elements.pd.xz": "e9007e45786773c72d2e454ad17dc69f2cd8edf42e66313dc0d343b2b272eb45",
     "elements_completed.pd.xz": "9a885ac06c99dd79e63bbb431f46d8131f078239a42df028edfe1052a45a2888",
-    "mp_inorganic.pd.xz": "2555f832e584bbf55cd6297538e2105b519d1d9486ed93ac63f12b1b78fca4ab",
+    "mp_inorganic.pd.xz": "09c58c30555877bc48552e19b3f1dd3c065b43d3a97d40627c8bd486d936ace4",
+    "mp_structure.pd.xz": "b84f9c358be9ca707f5e6c2dcab762ea11ad16f923210bdd99ad16fa97146406",
     "version": "0.1.3"
 }

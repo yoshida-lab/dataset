@@ -46,7 +46,7 @@ if __name__ == '__main__':
     db_path = Path(__file__).parent
     with open('ids.json', 'r') as f:
         mp_ids = json.load(f)
-    _mp = _mp_structure(mp_ids, api_key='')
+    _mp = _mp_structure(mp_ids, api_key='1vRmHNP6w40CzaiO')
     _mp.to_pickle(str(db_path / name))
     # _mp.iloc[:10, :].to_excel(str(db_path / 'output.xlsx'))
     refresh(name)
