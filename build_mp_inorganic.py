@@ -7,7 +7,7 @@ from pathlib import Path
 import json
 
 import pandas as pd
-from pymatgen import MPRester
+from pymatgen.ext.matproj import MPRester
 from tqdm import tqdm
 import numpy as np
 

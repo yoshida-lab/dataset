@@ -7,7 +7,7 @@ from itertools import zip_longest
 from pathlib import Path
 
 import pandas as pd
-from pymatgen import MPRester
+from pymatgen.ext.matproj import MPRester
 from tqdm import tqdm
 
 

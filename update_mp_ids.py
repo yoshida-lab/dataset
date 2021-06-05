@@ -5,7 +5,7 @@
 import json
 
 # import joblib
-from pymatgen import MPRester
+from pymatgen.ext.matproj import MPRester
 
 
 def update(api_key):
